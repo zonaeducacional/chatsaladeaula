@@ -1,0 +1,56 @@
+{
+  "entities": {
+    "SalaInfo": {
+      "title": "Sala Info",
+      "description": "Informações da sala, como o código de acesso.",
+      "type": "object",
+      "properties": {
+        "codigo": {
+          "type": "string",
+          "description": "Código de 6 caracteres para acesso dos alunos."
+        }
+      },
+      "required": ["codigo"]
+    },
+    "Mensagem": {
+      "title": "Mensagem",
+      "description": "Uma mensagem no chat.",
+      "type": "object",
+      "properties": {
+        "nome": {
+          "type": "string",
+          "description": "Nome de quem enviou a mensagem."
+        },
+        "papel": {
+          "type": "string",
+          "enum": ["aluno", "admin"],
+          "description": "Papel de quem enviou a mensagem."
+        },
+        "texto": {
+          "type": "string",
+          "description": "Conteúdo da mensagem."
+        },
+        "ts": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp de quando a mensagem foi enviada."
+        }
+      },
+      "required": ["nome", "papel", "texto", "ts"]
+    }
+  },
+  "firestore": {
+    "/sala/info": {
+      "schema": "SalaInfo",
+      "description": "Documento com o código de acesso da sala."
+    },
+    "/sala/info/mensagens": {
+      "schema": "Mensagem",
+      "description": "Coleção de mensagens aprovadas."
+    },
+    "/sala/info/pendentes": {
+      "schema": "Mensagem",
+      "description": "Coleção de mensagens aguardando aprovação."
+    }
+  }
+}

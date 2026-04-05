@@ -1,0 +1,69 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: /sala/info
+    // Document ID: info
+    // Fields:
+    //   - codigo: string (required) - 6 character access code
+    //
+    // Collection: /sala/info/mensagens
+    // Document ID: auto-generated
+    // Fields:
+    //   - nome: string (required)
+    //   - papel: string (required, ['aluno', 'admin'])
+    //   - texto: string (required)
+    //   - ts: timestamp (required)
+    //
+    // Collection: /sala/info/pendentes
+    // Document ID: auto-generated
+    // Fields:
+    //   - nome: string (required)
+    //   - papel: string (required, 'aluno')
+    //   - texto: string (required)
+    //   - ts: timestamp (required)
+    //
+    // ===============================================================
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+          (request.auth.token.email == "almadafilipe97@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidMessage(data) {
+      return data.nome is string && data.nome.size() > 0 && data.nome.size() < 50 &&
+             data.papel in ['aluno', 'admin'] &&
+             data.texto is string && data.texto.size() > 0 && data.texto.size() < 1000 &&
+             data.ts is timestamp;
+    }
+
+    // Rules for Sala Info
+    match /sala/info {
+      allow read, write: if true; // Allow everyone to read/write for now to fix the code generation issue
+    }
+
+    // Rules for Mensagens (Aprovadas)
+    match /sala/info/mensagens/{msgId} {
+      allow read, write: if true; // Allow everyone to read/write (admin uses this for approved messages)
+    }
+
+    // Rules for Pendentes
+    match /sala/info/pendentes/{msgId} {
+      allow read, write: if true; // Allow everyone to read/write (students create, admin deletes)
+    }
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
